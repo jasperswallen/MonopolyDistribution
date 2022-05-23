@@ -68,11 +68,29 @@ class Monopoly:
 
     def play_turn(self) -> None:
         """
-        Play a single turn
+        Play a single turn, keeping track of the spaces landed on.
 
         When in jail, attempt to get out of jail only by rolling dice. Assume
         that you do not have enough money and do not have a get-out-of-jail-free
         card (TODO)
+
+        When not in jail, roll two dice, and move to the position of the sum of
+        those dice after your current position. If the two dice are the same,
+        keep rolling after performing the function of this space.
+
+        If you roll two of the same value three times in a row (for example,
+        3 3, 4 4, 1 1), go directly to jail without performing the function of
+        the final space you landed on.
+
+        If you land on a chance space, "draw" a card. There are 16 chance cards
+        at the beginning of the game. 1 of these cards is a go-directly-to-jail
+        card. When a card is drawn, it is not replaced. If you "draw" the jail
+        card, go directly to jail. Otherwise, "discard" this card, and continue
+        with your turn.
+
+        If you land on the TO_JAIL_SPACE, go directly to jail.
+
+        When going to jail, your turn immediately ends.
         """
 
         if self.in_jail:
@@ -95,7 +113,7 @@ class Monopoly:
                 if self._check_chance_card():
                     return
         else:
-            # not currently in jail, simply roll two dice
+            # not currently in jail
 
             self.num_consecutive_doubles = 0
             roll_one = 0
@@ -108,7 +126,7 @@ class Monopoly:
                 if roll_one == roll_two:
                     self.num_consecutive_doubles += 1
                     if self.num_consecutive_doubles >= 3:
-                        # go to jail and end your turn
+                        # go to jail and end your turn without counting this space
                         self._go_to_jail()
                         return
 
