@@ -47,6 +47,7 @@ class Monopoly:
         self.jail_card_drawn = False
         self.chance_cards_drawn = 0
         self.num_consecutive_doubles = 0
+        self.num_jail_turns = 0
 
         self.spaces_landed: List[int] = [0 for i in range(self.NUM_SPACES)]
 
@@ -63,22 +64,37 @@ class Monopoly:
 
         if self.in_jail:
             # currently in jail
-            pass
+
+            self.num_jail_turns += 1
+
+            roll_one = random.randint(1, 6)
+            roll_two = random.randint(1, 6)
+
+            if roll_one == roll_two or self.num_jail_turns >= 3:
+                # move forward this many spaces, but immediately end your turn
+                # otherwise (unless it is a chance card)
+                self.in_jail = False
+
+                self.current_position += roll_one + roll_two
+                self.current_position %= self.NUM_SPACES
+                self.spaces_landed[self.current_position] += 1
+
+                if not self.jail_card_drawn and self.current_position in self.CHANCE_SPACES:
+                    # landed on a chance space and could go to jail
+                    if random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn) <= 1:
+                        self._go_to_jail()
+                        self.jail_card_drawn = True
+
+                    self.chance_cards_drawn += 1
+
         else:
             # not currently in jail, simply roll two dice
+
+            self.num_consecutive_doubles = 0
+
             while True:
                 roll_one = random.randint(1, 6)
                 roll_two = random.randint(1, 6)
-
-                if roll_one != roll_two:
-                    self.num_consecutive_doubles = 0
-                    break
-                else:
-                    self.num_consecutive_doubles += 1
-                    if self.num_consecutive_doubles >= 3:
-                        self._go_to_jail()
-                        # go to jail and end your turn
-                        return
 
                 self.current_position += roll_one + roll_two
                 self.current_position %= self.NUM_SPACES
@@ -98,7 +114,17 @@ class Monopoly:
                     self._go_to_jail()
                     return
 
+                if roll_one != roll_two:
+                    self.num_consecutive_doubles = 0
+                    break
+                else:
+                    self.num_consecutive_doubles += 1
+                    if self.num_consecutive_doubles >= 3:
+                        self._go_to_jail()
+                        # go to jail and end your turn
+                        return
+
     def _go_to_jail(self):
         self.current_position = self.JAIL_SPACE
         self.in_jail = True
-        self.num_consecutive_doubles = 0
+        self.num_jail_turns = 0
