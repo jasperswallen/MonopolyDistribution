@@ -98,9 +98,11 @@ def main():
     Run simulation of Monopoly games and graph frequency chart
     """
 
+    random.seed()
+
     monopoly_games = [Monopoly() for _ in range(10_000)]
     for monopoly in monopoly_games:
-        for _ in range(random.randint(50, 150)):
+        for _ in range(random.randint(150, 250)):
             monopoly.play_turn()
 
     space_index = list(range(Monopoly.NUM_SPACES))

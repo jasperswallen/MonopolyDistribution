@@ -46,8 +46,6 @@ class Monopoly:
         and various probabilities
         """
 
-        random.seed()
-
         self.in_jail = False
         self.current_position = 0
         self.jail_card_drawn = False
