@@ -49,7 +49,7 @@ class Monopoly:
         self.num_consecutive_doubles = 0
         self.num_jail_turns = 0
 
-        self.spaces_landed: List[int] = [0 for i in range(self.NUM_SPACES)]
+        self.spaces_landed: List[int] = [0 for _ in range(self.NUM_SPACES)]
 
         assert len(self.spaces_landed) == self.NUM_SPACES
 
