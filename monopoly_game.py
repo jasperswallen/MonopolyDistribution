@@ -2,6 +2,7 @@ from typing import List
 
 import random
 
+
 class Monopoly:
     """
     The class responsible for a singular game of Monopoly
