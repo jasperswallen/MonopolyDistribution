@@ -23,7 +23,7 @@ def main():
 
     plt.bar(space_index, monopoly_space_distribution)
 
-    cursor: mplcursors.Cursor = mplcursors.cursor(hover=mplcursors.HoverMode.Transient)
+    cursor: mplcursors.Cursor = mplcursors.cursor(hover=mplcursors.HoverMode.Persistent)
 
     @cursor.connect("add")
     def on_add(sel: mplcursors.Selection):
