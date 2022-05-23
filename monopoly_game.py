@@ -1,3 +1,8 @@
+"""
+Module containing the Monopoly class, which can play a single-player simulated
+game of Monopoly
+"""
+
 from typing import List
 
 import random
@@ -54,6 +59,13 @@ class Monopoly:
 
         assert len(self.spaces_landed) == self.NUM_SPACES
 
+    def get_distribution(self):
+        """
+        Get the distribution of spaces landed on during the course of a game
+        """
+
+        return self.spaces_landed
+
     def play_turn(self) -> None:
         """
         Play a single turn
@@ -92,10 +104,19 @@ class Monopoly:
             # not currently in jail, simply roll two dice
 
             self.num_consecutive_doubles = 0
+            roll_one = 0
+            roll_two = 0
 
-            while True:
+            while roll_one == roll_two:
                 roll_one = random.randint(1, 6)
                 roll_two = random.randint(1, 6)
+
+                if roll_one == roll_two:
+                    self.num_consecutive_doubles += 1
+                    if self.num_consecutive_doubles >= 3:
+                        # go to jail and end your turn
+                        self._go_to_jail()
+                        return
 
                 self.current_position += roll_one + roll_two
                 self.current_position %= self.NUM_SPACES
@@ -115,17 +136,11 @@ class Monopoly:
                     self._go_to_jail()
                     return
 
-                if roll_one != roll_two:
-                    self.num_consecutive_doubles = 0
-                    break
-                else:
-                    self.num_consecutive_doubles += 1
-                    if self.num_consecutive_doubles >= 3:
-                        self._go_to_jail()
-                        # go to jail and end your turn
-                        return
-
     def _go_to_jail(self):
+        """
+        Helper function to clean up variables when going to jail
+        """
+
         self.current_position = self.JAIL_SPACE
         self.in_jail = True
         self.num_jail_turns = 0
