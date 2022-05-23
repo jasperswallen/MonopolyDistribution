@@ -102,7 +102,7 @@ def main():
 
     monopoly_games = [Monopoly() for _ in range(10_000)]
     for monopoly in monopoly_games:
-        for _ in range(random.randint(150, 250)):
+        for _ in range(random.randint(20, 50)):
             monopoly.play_turn()
 
     space_index = list(range(Monopoly.NUM_SPACES))
