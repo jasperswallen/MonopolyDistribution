@@ -59,7 +59,7 @@ class Monopoly:
 
         assert len(self.spaces_landed) == self.NUM_SPACES
 
-    def get_distribution(self):
+    def get_distribution(self) -> List[int]:
         """
         Get the distribution of spaces landed on during the course of a game
         """
@@ -92,14 +92,8 @@ class Monopoly:
                 self.current_position %= self.NUM_SPACES
                 self.spaces_landed[self.current_position] += 1
 
-                if not self.jail_card_drawn and self.current_position in self.CHANCE_SPACES:
-                    # landed on a chance space and could go to jail
-                    if random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn) <= 1:
-                        self._go_to_jail()
-                        self.jail_card_drawn = True
-
-                    self.chance_cards_drawn += 1
-
+                if self._check_chance_card():
+                    return
         else:
             # not currently in jail, simply roll two dice
 
@@ -122,21 +116,14 @@ class Monopoly:
                 self.current_position %= self.NUM_SPACES
                 self.spaces_landed[self.current_position] += 1
 
-                if not self.jail_card_drawn and self.current_position in self.CHANCE_SPACES:
-                    # landed on a chance space and could go to jail
-                    if random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn) <= 1:
-                        self._go_to_jail()
-                        self.chance_cards_drawn += 1
-                        self.jail_card_drawn = True
-                        return
-                    else:
-                        self.chance_cards_drawn += 1
+                if self._check_chance_card():
+                    return
 
                 if self.current_position == self.TO_JAIL_SPACE:
                     self._go_to_jail()
                     return
 
-    def _go_to_jail(self):
+    def _go_to_jail(self) -> None:
         """
         Helper function to clean up variables when going to jail
         """
@@ -144,3 +131,22 @@ class Monopoly:
         self.current_position = self.JAIL_SPACE
         self.in_jail = True
         self.num_jail_turns = 0
+
+    def _check_chance_card(self) -> bool:
+        """
+        If we landed on a Chance card pickup, check to see if we picked up the
+        go-straight-to-jail card. Otherwise, discard this card.
+
+        @return True if we went to jail by drawing the card, False otherwise
+        """
+
+        if not self.jail_card_drawn and self.current_position in self.CHANCE_SPACES:
+            # landed on a chance space and could go to jail
+            if random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn) <= 1:
+                self._go_to_jail()
+                self.jail_card_drawn = True
+
+            self.chance_cards_drawn += 1
+            return self.jail_card_drawn
+
+        return False
