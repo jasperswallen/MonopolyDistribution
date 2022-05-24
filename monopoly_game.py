@@ -88,9 +88,14 @@ class Monopoly:
     The spaces that have a railroad on them, 0-indexed (from Go)
     """
 
-    TAX_SPACES = [4, 12, 28, 38]
+    TAX_SPACES = [4, 38]
     """
     The spaces where the player must pay a tax, 0-indexed (from Go)
+    """
+
+    UTILITY_SPACES = [12, 28]
+    """
+    Utility spaces, 0-indexed (from Go)
     """
 
     def __init__(self) -> None:
@@ -105,13 +110,13 @@ class Monopoly:
         self.num_consecutive_doubles = 0
         self.num_jail_turns = 0
 
-        self.community_chest_cards = list(range(16))
-        self.chance_cards = list(range(16))
+        self.chance_cards = list(range(1, 17))
+        self.community_chest_cards = list(range(1, 17))
 
-        random.shuffle(self.community_chest_cards)
         random.shuffle(self.chance_cards)
+        random.shuffle(self.community_chest_cards)
 
-        self.spaces_landed: List[int] = [0 for _ in range(self.NUM_SPACES)]
+        self.spaces_landed: List[int] = [0 for _ in range(Monopoly.NUM_SPACES)]
 
         assert len(self.spaces_landed) == self.NUM_SPACES
 
@@ -188,7 +193,7 @@ class Monopoly:
             self.in_jail = False
 
             self.current_position += roll_one + roll_two
-            self.current_position %= self.NUM_SPACES
+            self.current_position %= Monopoly.NUM_SPACES
             self.spaces_landed[self.current_position] += 1
 
             self._draw_card()
@@ -214,13 +219,13 @@ class Monopoly:
                     return
 
             self.current_position += roll_one + roll_two
-            self.current_position %= self.NUM_SPACES
+            self.current_position %= Monopoly.NUM_SPACES
             self.spaces_landed[self.current_position] += 1
 
             if self._draw_card():
                 return
 
-            if self.current_position == self.TO_JAIL_SPACE:
+            if self.current_position == Monopoly.TO_JAIL_SPACE:
                 self._go_to_jail()
                 return
 
@@ -229,7 +234,7 @@ class Monopoly:
         Helper function to clean up variables when going to jail
         """
 
-        self.current_position = self.JAIL_SPACE
+        self.current_position = Monopoly.JAIL_SPACE
         self.in_jail = True
         self.num_jail_turns = 0
 
@@ -246,23 +251,66 @@ class Monopoly:
         @return True if we went to jail by drawing the card, False otherwise
         """
 
-        if self.current_position in self.CHANCE_SPACES:
+        if self.current_position in Monopoly.CHANCE_SPACES:
             # currently on a Chance draw. "Draw" a card.
             # if card_draw is a 2, call that a to-jail card. if it is a 1, call
             # that a get-out-of-jail card
             card_drawn = self.chance_cards.pop()
 
-            if card_drawn == 2:
+            if card_drawn == 1:
+                # advance to boardwalk
+                self.current_position = 39
+            elif card_drawn == 2:
+                # advance to Go
+                self.current_position = Monopoly.GO_SPACE
+            elif card_drawn == 3:
+                # advance to Illinois Avenue
+                self.current_position = 24
+            elif card_drawn == 4:
+                # advance to St. Charles Place
+                self.current_position = 11
+            elif card_drawn in (5, 6):
+                # advance to the nearest Railway
+                self.current_position = min(Monopoly.RAILROAD_SPACES,
+                                            key=lambda space: abs(space - self.current_position))
+            elif card_drawn == 7:
+                # advance to nearest Utility
+                self.current_position = min(Monopoly.UTILITY_SPACES,
+                                            key=lambda space: abs(space - self.current_position))
+            elif card_drawn == 8:
+                # bank pays you $50
+                pass
+            elif card_drawn == 9:
+                # get out of jail free card
+                self.get_out_of_jail_card_drawn[0] = True
+            elif card_drawn == 10:
+                # go back three spaces
+                self.current_position -= 3
+                if self.current_position < 0:
+                    self.current_position += self.NUM_SPACES
+            elif card_drawn == 11:
                 self._go_to_jail()
                 self.chance_cards.append(card_drawn)
                 return True
+            elif card_drawn == 12:
+                # general repairs
+                pass
+            elif card_drawn == 13:
+                # speeding fine $15
+                pass
+            elif card_drawn == 14:
+                # advance to Reading Railroad
+                self.current_position = 5
+            elif card_drawn == 15:
+                # pay each player $50
+                pass
+            elif card_drawn == 16:
+                # collect $150
+                pass
 
-            if card_drawn == 1:
-                self.get_out_of_jail_card_drawn[0] = True
-            else:
-                self.chance_cards.append(card_drawn)
+            self.chance_cards.append(card_drawn)
 
-        elif self.current_position in self.COMMUNITY_CHEST_SPACES:
+        elif self.current_position in Monopoly.COMMUNITY_CHEST_SPACES:
             # currently on a Community Chest draw. "Draw" a card
             # if card draw is a 1, call that a get-out-of-jail card (if it has
             # not yet been drawn). otherwise, "discard" this card

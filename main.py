@@ -38,6 +38,9 @@ for space in range(Monopoly.NUM_SPACES):
     elif space in Monopoly.TAX_SPACES:
         colors.append("brown")
         labels.append("Tax")
+    elif space in Monopoly.UTILITY_SPACES:
+        colors.append("grey")
+        labels.append("Utility")
 
 
 def main():
