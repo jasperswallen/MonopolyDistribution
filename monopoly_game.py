@@ -105,6 +105,12 @@ class Monopoly:
         self.num_consecutive_doubles = 0
         self.num_jail_turns = 0
 
+        self.community_chest_cards = list(range(16))
+        self.chance_cards = list(range(16))
+
+        random.shuffle(self.community_chest_cards)
+        random.shuffle(self.chance_cards)
+
         self.spaces_landed: List[int] = [0 for _ in range(self.NUM_SPACES)]
 
         assert len(self.spaces_landed) == self.NUM_SPACES
@@ -163,11 +169,13 @@ class Monopoly:
         if self.get_out_of_jail_card_drawn[0]:
             # if you have a get-out-of-jail-free card, use it immediately
             self.get_out_of_jail_card_drawn[0] = False
+            self.chance_cards.append(1)
             self._free_turn()
             return
 
         if self.get_out_of_jail_card_drawn[1]:
             self.get_out_of_jail_card_drawn[1] = False
+            self.community_chest_cards.append(1)
             self._free_turn()
             return
 
@@ -240,26 +248,29 @@ class Monopoly:
 
         if self.current_position in self.CHANCE_SPACES:
             # currently on a Chance draw. "Draw" a card.
-            card_draw = random.randint(
-                1, self.ORIGINAL_CHANCE_CARDS - self.get_out_of_jail_card_drawn[0])
+            # if card_draw is a 2, call that a to-jail card. if it is a 1, call
+            # that a get-out-of-jail card
+            card_drawn = self.chance_cards.pop()
 
-            # if card_draw is a 1, call that a to-jail card. if it is a 2, call
-            # that a get-out-of-jail card (if it has not yet been drawn).
-            if card_draw == 1:
+            if card_drawn == 2:
                 self._go_to_jail()
+                self.chance_cards.append(card_drawn)
                 return True
 
-            if card_draw == 2 and not self.get_out_of_jail_card_drawn[0]:
+            if card_drawn == 1:
                 self.get_out_of_jail_card_drawn[0] = True
+            else:
+                self.chance_cards.append(card_drawn)
 
         elif self.current_position in self.COMMUNITY_CHEST_SPACES:
             # currently on a Community Chest draw. "Draw" a card
-            card_draw = random.randint(
-                1, self.ORIGINAL_CHANCE_CARDS - self.get_out_of_jail_card_drawn[1])
-
             # if card draw is a 1, call that a get-out-of-jail card (if it has
             # not yet been drawn). otherwise, "discard" this card
-            if card_draw == 1 and not self.get_out_of_jail_card_drawn[1]:
+            card_drawn = self.community_chest_cards.pop()
+
+            if card_drawn == 1:
                 self.get_out_of_jail_card_drawn[1] = True
+            else:
+                self.community_chest_cards.append(card_drawn)
 
         return False
