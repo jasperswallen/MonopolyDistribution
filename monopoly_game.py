@@ -103,6 +103,9 @@ class Monopoly:
         self.current_position = 0
         self.jail_card_drawn = False
         self.chance_cards_drawn = 0
+        self.community_chest_cards_drawn = 0
+        self.get_out_of_jail_card_drawn = [False, False]
+        self.get_out_of_jail_cards = 0
         self.num_consecutive_doubles = 0
         self.num_jail_turns = 0
 
@@ -161,8 +164,7 @@ class Monopoly:
                 self.current_position %= self.NUM_SPACES
                 self.spaces_landed[self.current_position] += 1
 
-                if self._check_chance_card():
-                    return
+                self._draw_card()
         else:
             # not currently in jail
 
@@ -185,7 +187,7 @@ class Monopoly:
                 self.current_position %= self.NUM_SPACES
                 self.spaces_landed[self.current_position] += 1
 
-                if self._check_chance_card():
+                if self._draw_card():
                     return
 
                 if self.current_position == self.TO_JAIL_SPACE:
@@ -201,21 +203,51 @@ class Monopoly:
         self.in_jail = True
         self.num_jail_turns = 0
 
-    def _check_chance_card(self) -> bool:
+    def _draw_card(self) -> None:
         """
-        If we landed on a Chance card pickup, check to see if we picked up the
-        go-straight-to-jail card. Otherwise, discard this card.
+        Helper function to draw a card if we are currently on either a Community
+        Chest or Chance space.
+
+        We may draw either a go-straight-to-jail card (1/16 odds on a Chance
+        draw) or a get-out-of-jail-free card (1/16 odds on both Chance and
+        Community Chest draws). Otherwise, discard this card.
 
         @return True if we went to jail by drawing the card, False otherwise
         """
 
-        if not self.jail_card_drawn and self.current_position in self.CHANCE_SPACES:
-            # landed on a chance space and could go to jail
-            if random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn) <= 1:
-                self._go_to_jail()
-                self.jail_card_drawn = True
-
+        if (self.current_position in self.CHANCE_SPACES
+                and self.chance_cards_drawn < self.ORIGINAL_CHANCE_CARDS):
+            # currently on a Chance draw. "Draw" a card.
+            card_draw = random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn)
             self.chance_cards_drawn += 1
-            return self.jail_card_drawn
+
+            # if card_draw is a 1, call that a to-jail card (if it has not yet
+            # been drawn). if it is a 2, call that a get-out-of-jail card (if it
+            # has not yet been drawn). if the to-jail card has been drawn
+            # already, then 1 becomes the get-out-of-jail card
+            if not self.jail_card_drawn:
+                if card_draw == 1:
+                    self._go_to_jail()
+                    self.jail_card_drawn = True
+                    return True
+
+                if card_draw == 2 and not self.get_out_of_jail_card_drawn[0]:
+                    self.get_out_of_jail_cards += 1
+                    self.get_out_of_jail_card_drawn[0] = True
+            elif card_draw == 1 and not self.get_out_of_jail_card_drawn[0]:
+                self.get_out_of_jail_cards += 1
+                self.get_out_of_jail_card_drawn[0] = True
+        elif (self.current_position in self.COMMUNITY_CHEST_SPACES
+              and self.community_chest_cards_drawn < self.ORIGINAL_CHANCE_CARDS):
+            # currently on a Community Chest draw. "Draw" a card
+            card_draw = random.randint(
+                1, self.ORIGINAL_CHANCE_CARDS - self.community_chest_cards_drawn)
+            self.community_chest_cards_drawn += 1
+
+            # if card draw is a 1, call that a get-out-of-jail card (if it has
+            # not yet been drawn). otherwise, "discard" this card
+            if card_draw == 1 and not self.get_out_of_jail_card_drawn[1]:
+                self.get_out_of_jail_cards += 1
+                self.get_out_of_jail_card_drawn[1] = True
 
         return False
