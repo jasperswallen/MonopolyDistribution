@@ -82,8 +82,9 @@ def main():
     def on_add(sel: mplcursors.Selection):
         x_pos, y_pos, width, height = sel.artist[sel.index].get_bbox().bounds
         index = int(x_pos + width / 2)
+        height = int(height)
         sel.annotation.set(
-            text=f"{index}: {int(height)} ({(height / total_spaces * 100.0):.3f}%)\n{labels[index]}",
+            text=f"{index}: {height} ({(height / total_spaces * 100.0):.3f}%)\n{labels[index]}",
             position=(0, 20),
             anncoords="offset points")
         sel.annotation.xy = (index, y_pos + height)
