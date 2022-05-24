@@ -58,9 +58,11 @@ def main():
     space_index = list(range(Monopoly.NUM_SPACES))
     monopoly_space_distribution = [0 for _ in range(Monopoly.NUM_SPACES)]
 
+    total_spaces = 0
     for monopoly in monopoly_games:
         for i, count in enumerate(monopoly.get_distribution()):
             monopoly_space_distribution[i] += count
+            total_spaces += count
 
     plt.xlabel("Space Index")
     plt.ylabel("Number of times landed")
@@ -74,9 +76,10 @@ def main():
     def on_add(sel: mplcursors.Selection):
         x_pos, y_pos, width, height = sel.artist[sel.index].get_bbox().bounds
         index = int(x_pos + width / 2)
-        sel.annotation.set(text=f"{index}: {int(height)}\n{labels[index]}",
-                           position=(0, 20),
-                           anncoords="offset points")
+        sel.annotation.set(
+            text=f"{index}: {int(height)} ({(height / total_spaces * 100.0):.3f}%)\n{labels[index]}",
+            position=(0, 20),
+            anncoords="offset points")
         sel.annotation.xy = (index, y_pos + height)
 
     plt.show()
