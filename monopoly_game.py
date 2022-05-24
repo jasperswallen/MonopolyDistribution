@@ -101,11 +101,7 @@ class Monopoly:
 
         self.in_jail = False
         self.current_position = 0
-        self.jail_card_drawn = False
-        self.chance_cards_drawn = 0
-        self.community_chest_cards_drawn = 0
         self.get_out_of_jail_card_drawn = [False, False]
-        self.get_out_of_jail_cards = 0
         self.num_consecutive_doubles = 0
         self.num_jail_turns = 0
 
@@ -159,10 +155,26 @@ class Monopoly:
 
         self.num_jail_turns += 1
 
+        if self.num_jail_turns >= 3:
+            # only stay in jail for up to 3 turns
+            self._free_turn()
+            return
+
+        if self.get_out_of_jail_card_drawn[0]:
+            # if you have a get-out-of-jail-free card, use it immediately
+            self.get_out_of_jail_card_drawn[0] = False
+            self._free_turn()
+            return
+
+        if self.get_out_of_jail_card_drawn[1]:
+            self.get_out_of_jail_card_drawn[1] = False
+            self._free_turn()
+            return
+
         roll_one = random.randint(1, 6)
         roll_two = random.randint(1, 6)
 
-        if roll_one == roll_two or self.num_jail_turns >= 3:
+        if roll_one == roll_two:
             # move forward this many spaces, but immediately end your turn
             # otherwise (unless it is a chance card)
             self.in_jail = False
@@ -220,44 +232,34 @@ class Monopoly:
 
         We may draw either a go-straight-to-jail card (1/16 odds on a Chance
         draw) or a get-out-of-jail-free card (1/16 odds on both Chance and
-        Community Chest draws). Otherwise, discard this card.
+        Community Chest draws). If the card is a get-out-of-jail-free card,
+        "keep" that card. Otherwise, return it to the pile.
 
         @return True if we went to jail by drawing the card, False otherwise
         """
 
-        if (self.current_position in self.CHANCE_SPACES
-                and self.chance_cards_drawn < self.ORIGINAL_CHANCE_CARDS):
+        if self.current_position in self.CHANCE_SPACES:
             # currently on a Chance draw. "Draw" a card.
-            card_draw = random.randint(1, self.ORIGINAL_CHANCE_CARDS - self.chance_cards_drawn)
-            self.chance_cards_drawn += 1
+            card_draw = random.randint(
+                1, self.ORIGINAL_CHANCE_CARDS - self.get_out_of_jail_card_drawn[0])
 
-            # if card_draw is a 1, call that a to-jail card (if it has not yet
-            # been drawn). if it is a 2, call that a get-out-of-jail card (if it
-            # has not yet been drawn). if the to-jail card has been drawn
-            # already, then 1 becomes the get-out-of-jail card
-            if not self.jail_card_drawn:
-                if card_draw == 1:
-                    self._go_to_jail()
-                    self.jail_card_drawn = True
-                    return True
+            # if card_draw is a 1, call that a to-jail card. if it is a 2, call
+            # that a get-out-of-jail card (if it has not yet been drawn).
+            if card_draw == 1:
+                self._go_to_jail()
+                return True
 
-                if card_draw == 2 and not self.get_out_of_jail_card_drawn[0]:
-                    self.get_out_of_jail_cards += 1
-                    self.get_out_of_jail_card_drawn[0] = True
-            elif card_draw == 1 and not self.get_out_of_jail_card_drawn[0]:
-                self.get_out_of_jail_cards += 1
+            if card_draw == 2 and not self.get_out_of_jail_card_drawn[0]:
                 self.get_out_of_jail_card_drawn[0] = True
-        elif (self.current_position in self.COMMUNITY_CHEST_SPACES
-              and self.community_chest_cards_drawn < self.ORIGINAL_CHANCE_CARDS):
+
+        elif self.current_position in self.COMMUNITY_CHEST_SPACES:
             # currently on a Community Chest draw. "Draw" a card
             card_draw = random.randint(
-                1, self.ORIGINAL_CHANCE_CARDS - self.community_chest_cards_drawn)
-            self.community_chest_cards_drawn += 1
+                1, self.ORIGINAL_CHANCE_CARDS - self.get_out_of_jail_card_drawn[1])
 
             # if card draw is a 1, call that a get-out-of-jail card (if it has
             # not yet been drawn). otherwise, "discard" this card
             if card_draw == 1 and not self.get_out_of_jail_card_drawn[1]:
-                self.get_out_of_jail_cards += 1
                 self.get_out_of_jail_card_drawn[1] = True
 
         return False
