@@ -8,87 +8,34 @@ import mplcursors
 
 from monopoly_game import Monopoly
 
-PROPERTY_INDEXES = [
-    1,
-    3,
-    6,
-    8,
-    9,
-    11,
-    13,
-    14,
-    16,
-    18,
-    19,
-    21,
-    23,
-    24,
-    26,
-    27,
-    29,
-    31,
-    32,
-    34,
-    37,
-    39,
-]
-RAILROAD_INDEXES = [
-    5,
-    15,
-    25,
-    35,
-]
-GO_INDEX = [
-    0,
-]
-JAIL_INDEX = [
-    10,
-]
-FREE_PARKING_INDEX = [
-    20,
-]
-TO_JAIL_INDEX = [
-    30,
-]
-CARD_INDEXES = [
-    2,
-    7,
-    17,
-    22,
-    33,
-    36,
-]
-TAX_INDEXES = [
-    4,
-    12,
-    28,
-    38,
-]
 colors = []
 labels = []
 for space in range(Monopoly.NUM_SPACES):
-    if space in PROPERTY_INDEXES:
+    if space in Monopoly.PROPERTY_SPACES:
         colors.append("green")
         labels.append("Property")
-    elif space in RAILROAD_INDEXES:
+    elif space in Monopoly.RAILROAD_SPACES:
         colors.append("black")
         labels.append("Railroad")
-    elif space in GO_INDEX:
+    elif space == Monopoly.GO_SPACE:
         colors.append("#90EE90")
         labels.append("Go")
-    elif space in JAIL_INDEX:
+    elif space == Monopoly.JAIL_SPACE:
         colors.append("orange")
         labels.append("Jail (Visiting)")
-    elif space in FREE_PARKING_INDEX:
+    elif space == Monopoly.FREE_PARKING_SPACE:
         colors.append("#023020")
         labels.append("Free Parking")
-    elif space in TO_JAIL_INDEX:
+    elif space == Monopoly.TO_JAIL_SPACE:
         colors.append("red")
         labels.append("To Jail")
-    elif space in CARD_INDEXES:
+    elif space in Monopoly.CHANCE_SPACES:
         colors.append("blue")
-        labels.append("Card Draw")
-    elif space in TAX_INDEXES:
+        labels.append("Chance Card Draw")
+    elif space in Monopoly.COMMUNITY_CHEST_SPACES:
+        colors.append("blue")
+        labels.append("Community Chest Card Draw")
+    elif space in Monopoly.TAX_SPACES:
         colors.append("brown")
         labels.append("Tax")
 

@@ -18,14 +18,26 @@ class Monopoly:
     The total number of spaces in a Monopoly board
     """
 
+    ORIGINAL_CHANCE_CARDS = 16
+    """
+    The number of chance cards to draw from, at the beginning of the game
+
+    It is assumed that only this player draws from the Chance cards
+    """
+
+    GO_SPACE = 0
+    """
+    The location of the Go space (the initial location)
+    """
+
     JAIL_SPACE = 10
     """
     The location of the jail, 0-indexed (from Go)
     """
 
-    CHANCE_SPACES = [7, 22, 36]
+    FREE_PARKING_SPACE = 20
     """
-    The location of the chance draws, 0-indexed (from Go)
+    The location of the free parking space, 0-indexed (from Go)
     """
 
     TO_JAIL_SPACE = 30
@@ -33,11 +45,52 @@ class Monopoly:
     The location of the instant-jail space, 0-indexed (from Go)
     """
 
-    ORIGINAL_CHANCE_CARDS = 16
+    CHANCE_SPACES = [7, 22, 36]
     """
-    The number of chance cards to draw from, at the beginning of the game
+    The location of the chance draws, 0-indexed (from Go)
+    """
 
-    It is assumed that only this player draws from the Chance cards
+    COMMUNITY_CHEST_SPACES = [2, 17, 33]
+    """
+    The location of the community chest draws, 0-indexed (from Go)
+    """
+
+    PROPERTY_SPACES = [
+        1,
+        3,
+        6,
+        8,
+        9,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        21,
+        23,
+        24,
+        26,
+        27,
+        29,
+        31,
+        32,
+        34,
+        37,
+        39,
+    ]
+    """
+    The spaces that have a property on them, 0-indexed (from Go)
+    """
+
+    RAILROAD_SPACES = [5, 15, 25, 35]
+    """
+    The spaces that have a railroad on them, 0-indexed (from Go)
+    """
+
+    TAX_SPACES = [4, 12, 28, 38]
+    """
+    The spaces where the player must pay a tax, 0-indexed (from Go)
     """
 
     def __init__(self) -> None:
