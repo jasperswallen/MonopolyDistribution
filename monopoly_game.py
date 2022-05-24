@@ -18,13 +18,6 @@ class Monopoly:
     The total number of spaces in a Monopoly board
     """
 
-    ORIGINAL_CHANCE_CARDS = 16
-    """
-    The number of chance cards to draw from, at the beginning of the game
-
-    It is assumed that only this player draws from the Chance cards
-    """
-
     GO_SPACE = 0
     """
     The location of the Go space (the initial location)
@@ -253,9 +246,8 @@ class Monopoly:
 
         if self.current_position in Monopoly.CHANCE_SPACES:
             # currently on a Chance draw. "Draw" a card.
-            # if card_draw is a 2, call that a to-jail card. if it is a 1, call
-            # that a get-out-of-jail card
             card_drawn = self.chance_cards.pop()
+            append = True
 
             if card_drawn == 1:
                 # advance to boardwalk
@@ -281,8 +273,9 @@ class Monopoly:
                 # bank pays you $50
                 pass
             elif card_drawn == 9:
-                # get out of jail free card
+                # get out of jail free card. Do not add back to deck
                 self.get_out_of_jail_card_drawn[0] = True
+                append = False
             elif card_drawn == 10:
                 # go back three spaces
                 self.current_position -= 3
@@ -308,17 +301,67 @@ class Monopoly:
                 # collect $150
                 pass
 
-            self.chance_cards.append(card_drawn)
+            if append:
+                self.chance_cards.append(card_drawn)
 
         elif self.current_position in Monopoly.COMMUNITY_CHEST_SPACES:
             # currently on a Community Chest draw. "Draw" a card
-            # if card draw is a 1, call that a get-out-of-jail card (if it has
-            # not yet been drawn). otherwise, "discard" this card
             card_drawn = self.community_chest_cards.pop()
+            append = True
 
             if card_drawn == 1:
+                # advance to Go
+                self.current_position = Monopoly.GO_SPACE
+            elif card_drawn == 2:
+                # collect $200
+                pass
+            elif card_drawn == 3:
+                # pay $50
+                pass
+            elif card_drawn == 4:
+                # collect $50
+                pass
+            elif card_drawn == 5:
+                # get out of jail free card. Do not add back to deck
                 self.get_out_of_jail_card_drawn[1] = True
-            else:
+                append = False
+            elif card_drawn == 6:
+                # go to jail
+                self._go_to_jail()
+                self.chance_cards.append(card_drawn)
+                return True
+            elif card_drawn == 7:
+                # receive $100
+                pass
+            elif card_drawn == 8:
+                # collect $20
+                pass
+            elif card_drawn == 9:
+                # collect $10 from each player
+                pass
+            elif card_drawn == 10:
+                # collect $100
+                pass
+            elif card_drawn == 11:
+                # pay $100
+                pass
+            elif card_drawn == 12:
+                # pay $50
+                pass
+            elif card_drawn == 13:
+                # collect $25
+                pass
+            elif card_drawn == 14:
+                # pay $40 per house, $115 per hotel
+                pass
+            elif card_drawn == 15:
+                # collect $10
+                pass
+            elif card_drawn == 16:
+                # collect $100
+                pass
+
+            if append:
                 self.community_chest_cards.append(card_drawn)
 
         return False
