@@ -10,7 +10,7 @@ from monopoly_game import Monopoly
 
 colors = []
 labels = []
-for space in range(Monopoly.NUM_SPACES):
+for space in range(Monopoly.NUM_SPACES + 1):
     if space in Monopoly.PROPERTY_SPACES:
         colors.append("green")
         labels.append("Property")
@@ -41,6 +41,9 @@ for space in range(Monopoly.NUM_SPACES):
     elif space in Monopoly.UTILITY_SPACES:
         colors.append("grey")
         labels.append("Utility")
+    elif space == Monopoly.NUM_SPACES:
+        colors.append("#eee")
+        labels.append("Total Jail Spaces")
 
 
 def main():
@@ -55,14 +58,17 @@ def main():
         for _ in range(random.randrange(20, 50)):
             monopoly.play_turn()
 
-    space_index = list(range(Monopoly.NUM_SPACES))
-    monopoly_space_distribution = [0 for _ in range(Monopoly.NUM_SPACES)]
+    space_index = [str(i) for i in range(Monopoly.NUM_SPACES)]
+    space_index.append("Total\nJail Turns")
+    monopoly_space_distribution = [0 for _ in range(Monopoly.NUM_SPACES + 1)]
 
     total_spaces = 0
     for monopoly in monopoly_games:
         for i, count in enumerate(monopoly.get_distribution()):
             monopoly_space_distribution[i] += count
             total_spaces += count
+        monopoly_space_distribution[Monopoly.NUM_SPACES] += monopoly.get_total_jail_turns()
+        total_spaces += monopoly.get_total_jail_turns()
 
     plt.xlabel("Space Index")
     plt.ylabel("Number of times landed")

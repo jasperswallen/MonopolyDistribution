@@ -101,7 +101,8 @@ class Monopoly:
         self.current_position = 0
         self.get_out_of_jail_card_drawn = [False, False]
         self.num_consecutive_doubles = 0
-        self.num_jail_turns = 0
+        self.num_consecutive_jail_turns = 0
+        self.total_jail_turns = 0
 
         self.chance_cards = list(range(1, 17))
         self.community_chest_cards = list(range(1, 17))
@@ -120,13 +121,18 @@ class Monopoly:
 
         return self.spaces_landed
 
+    def get_total_jail_turns(self):
+        """
+        Get the total number of turns spent in jail (non-visiting)
+        """
+        return self.total_jail_turns
+
     def play_turn(self) -> None:
         """
         Play a single turn, keeping track of the spaces landed on.
 
-        When in jail, attempt to get out of jail only by rolling dice. Assume
-        that you do not have enough money and do not have a get-out-of-jail-free
-        card (TODO)
+        When in jail, attempt to get out of jail only by rolling dice or using a
+        get-out-of-jail-free card if you have one.
 
         When not in jail, roll two dice, and move to the position of the sum of
         those dice after your current position. If the two dice are the same,
@@ -157,9 +163,9 @@ class Monopoly:
         Execute a single turn while in jail
         """
 
-        self.num_jail_turns += 1
+        self.num_consecutive_jail_turns += 1
 
-        if self.num_jail_turns >= 3:
+        if self.num_consecutive_jail_turns >= 3:
             # only stay in jail for up to 3 turns
             self._free_turn()
             return
@@ -176,6 +182,8 @@ class Monopoly:
             self.community_chest_cards.append(1)
             self._free_turn()
             return
+
+        self.total_jail_turns += 1
 
         roll_one = random.randint(1, 6)
         roll_two = random.randint(1, 6)
@@ -229,7 +237,7 @@ class Monopoly:
 
         self.current_position = Monopoly.JAIL_SPACE
         self.in_jail = True
-        self.num_jail_turns = 0
+        self.num_consecutive_jail_turns = 0
 
     def _draw_card(self) -> None:
         """
