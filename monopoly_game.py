@@ -136,11 +136,11 @@ class Monopoly:
         3 3, 4 4, 1 1), go directly to jail without performing the function of
         the final space you landed on.
 
-        If you land on a chance space, "draw" a card. There are 16 chance cards
-        at the beginning of the game. 1 of these cards is a go-directly-to-jail
-        card. When a card is drawn, it is not replaced. If you "draw" the jail
-        card, go directly to jail. Otherwise, "discard" this card, and continue
-        with your turn.
+        If you land on a chance or community chest space, "draw" a card. There
+        are 16 chance cards at the beginning of the game. 1 of these cards is a
+        go-directly-to-jail card. When a card is drawn, it is not replaced. If
+        you "draw" the jail card, go directly to jail. Otherwise, "discard" this
+        card, and continue with your turn.
 
         If you land on the TO_JAIL_SPACE, go directly to jail.
 
@@ -148,51 +148,61 @@ class Monopoly:
         """
 
         if self.in_jail:
-            # currently in jail
+            self._jail_turn()
+        else:
+            self._free_turn()
 
-            self.num_jail_turns += 1
+    def _jail_turn(self) -> None:
+        """
+        Execute a single turn while in jail
+        """
 
+        self.num_jail_turns += 1
+
+        roll_one = random.randint(1, 6)
+        roll_two = random.randint(1, 6)
+
+        if roll_one == roll_two or self.num_jail_turns >= 3:
+            # move forward this many spaces, but immediately end your turn
+            # otherwise (unless it is a chance card)
+            self.in_jail = False
+
+            self.current_position += roll_one + roll_two
+            self.current_position %= self.NUM_SPACES
+            self.spaces_landed[self.current_position] += 1
+
+            self._draw_card()
+
+    def _free_turn(self) -> None:
+        """
+        Execute a single turn while not in jail
+        """
+
+        self.num_consecutive_doubles = 0
+        roll_one = 0
+        roll_two = 0
+
+        while roll_one == roll_two:
             roll_one = random.randint(1, 6)
             roll_two = random.randint(1, 6)
 
-            if roll_one == roll_two or self.num_jail_turns >= 3:
-                # move forward this many spaces, but immediately end your turn
-                # otherwise (unless it is a chance card)
-                self.in_jail = False
-
-                self.current_position += roll_one + roll_two
-                self.current_position %= self.NUM_SPACES
-                self.spaces_landed[self.current_position] += 1
-
-                self._draw_card()
-        else:
-            # not currently in jail
-
-            self.num_consecutive_doubles = 0
-            roll_one = 0
-            roll_two = 0
-
-            while roll_one == roll_two:
-                roll_one = random.randint(1, 6)
-                roll_two = random.randint(1, 6)
-
-                if roll_one == roll_two:
-                    self.num_consecutive_doubles += 1
-                    if self.num_consecutive_doubles >= 3:
-                        # go to jail and end your turn without counting this space
-                        self._go_to_jail()
-                        return
-
-                self.current_position += roll_one + roll_two
-                self.current_position %= self.NUM_SPACES
-                self.spaces_landed[self.current_position] += 1
-
-                if self._draw_card():
-                    return
-
-                if self.current_position == self.TO_JAIL_SPACE:
+            if roll_one == roll_two:
+                self.num_consecutive_doubles += 1
+                if self.num_consecutive_doubles >= 3:
+                    # go to jail and end your turn without counting this space
                     self._go_to_jail()
                     return
+
+            self.current_position += roll_one + roll_two
+            self.current_position %= self.NUM_SPACES
+            self.spaces_landed[self.current_position] += 1
+
+            if self._draw_card():
+                return
+
+            if self.current_position == self.TO_JAIL_SPACE:
+                self._go_to_jail()
+                return
 
     def _go_to_jail(self) -> None:
         """
